@@ -1,0 +1,453 @@
+------------BASIC SQL-----------
+
+SELECT
+
+The "select" statement is used to query the database and retrieve selected data that match the criteria that you specify.
+	
+Conditional selections used in the where clause:
+	=	Equal
+	> 	Greater than
+	<	Less than
+	>= 	Greater than or equal
+	<=	Less than or equal
+	<> 	Not equal to 
+	LIKE
+
+Example:
+	select * 
+		from empinfo
+		where city <> Payson;
+	select first, last
+		from empinfo
+		where last LIKE '%ay';
+	select first, age
+		from empinfo
+		where first = 'Mary';
+
+
+
+
+CREATE TABLE:
+
+The "create table" statement is used to create a new table.
+
+	create table "tableName"
+	("column1" "data type" [constraint], 
+	 "column2" "data type" [constraint],
+	 "column3" "data type" [constraint]);
+	 [ ] = optional
+
+Common Data type:
+char(size) 		: Fixed-length character string. Size is specified 
+			      in parenthesis. Max 255 bytes.
+varchar(size)	: Variable-length character string. 
+				  Max size is specified in parenthesis.
+number(size)	: Number value with a max number of column digits 
+				  specified in parenthesis.
+data 			: Data value
+number(size, d) : Number value with a maximum number of digits of "size"
+				 total, with a maximum number of "d" digits to the right of the decimal.
+unique			: no two records have the same value
+not null		: not left a bank in the column
+primary key		: defines a unique identification of each record (or row)
+
+Example:
+	create table employee
+	(first varchar(15),
+	 last varchar(20),
+	 age number(3),
+	 address varchar(30),
+	 city varchar(20),
+	 state varchar(20));
+
+
+
+
+INSERT:
+
+The "insert into" statement is used to insert or add a row of data into table.
+
+	insert into "tablename"
+	 (first_column, ..., last_column)
+	 values (first_value, ..., last_value);
+
+Example:
+	insert into employee
+	 (first, last, age, address, city, state)
+	 values ('Luke', 'Duke', 45, '2130 Boars Nest',
+	         'Hazard Co', 'Georgia');
+
+
+
+
+UPDATE:
+
+The "update" statement is used to update or change records that match a specified criteria. This is accomplished by carefully constructing a where clause.
+
+	update "tablename"
+	set "columnname" = "newvalue"
+	 [, "nextcolumn" = "newvalue2"...]
+	where "columnname"
+	 OPERATOR "value"
+	 [and|or "column" OPERATOR "value"];
+
+	[ ] = optional
+
+Example:
+	update phone_book
+	 set area_code = 623
+	 where prefix = 979;
+
+	update phone_book
+	 set last_name = 'Smith', prefix = 555, suffixx = 9292
+	 where last_name = 'Jones';
+
+	update employee
+	 set age = age+1
+	 where first_name = 'Mary' and last_name = 'Williams';
+
+
+
+
+DELETING:
+
+The "delete" statement is used to records or rows from the table.
+	delete from "tableName"
+	 where "columnName"
+		OPERATOR "value"
+	 [and|or "column" OPERATOR "value"];
+
+	[ ] = optional
+
+Examples:
+	delete from employee; // all records will be deleted!
+
+	delete from employee
+	 where lastname = 'May';
+
+	delete from employee
+	 where firstname = 'Mike' or firstname = 'Eric';
+
+It's time for budget cut. Remove all employees who are making over $70000
+	delete from employee
+	 where salary > 70000;
+
+
+
+
+DROP:
+	
+The "drop table" command is used to delete a table and all rows in the table
+
+	drop table "tableName";
+
+Example:
+	drop table myemployees_ts0211;
+
+
+
+
+
+
+-----------INTERMEDIATE / ADVANCED SQL-------------
+
+SELECT STATEMENT:
+
+	SELECT [ALL | DISTINCT] column1[, column2] 
+	 	FROM table1[, table2] 
+	    [WHERE "conditions"] 
+	    [GROUP BY "column-list"] 
+	    [HAVING "conditions"]
+		[ORDER BY "column-list" [ASC | DESC]]
+
+Example:
+	SELECT name, age, salary
+	FROM employee
+	WHERE age > 40;
+
+
+Comparion Operators:
+	=		Equal
+	> 		Greater than
+	<		Less than
+	>= 		Greater than or equal
+	<=		Less than or equal
+	<> or !=	Not equal to 
+	LIKE	String comparison test
+
+ALL and DISTINCT are keywords used to select either ALL (default) or
+the "distinct" or unique records in your query results.
+	SELECT DISTINCT age
+	FROM employee_info;
+
+
+
+ARREGATE FUNCTIONS:
+They basically summarize the results of a particular column of selected data
+
+MIN 		: returns the smallest value in a given column
+MAX 		: returns the largest value in a given column
+SUM 		: returns the sum of the numeric values in a column
+AVG 		: returns the average value
+COUNT 		: returns the total number of values in a column
+COUNT(*) 	: returns the number of rows in a table
+
+Examples:
+	SELECT AVG(salary)
+	FROM employee;
+
+	SELECT AVG(salary)
+	FROM employee
+	WHERE title = 'Programmer';
+
+	// return the number of rows in the employees table.
+	SELECT Count(*)
+	FROM employee;
+
+
+
+GROUP BY CLAUSE:
+The GROUP BY clause will gather all of the rows together that contain 
+data in the specified column(s) and will allow aggregate functions to 
+be performed on the one or more columns.
+
+GROUP BY clause syntax:
+	SELECT column1, SUM(column2)
+	 FROM "list-of-tables"
+	 GROUP BY "column-list";
+
+Example:
+	SELECT lastname, max(salary), dept
+	 FROM employee
+	 GROUP BY dept;
+
+	select item, max(price), min(price)
+  	from items_ordered
+	group by item;
+
+
+
+HAVING:
+The "HAVING" clasue allow you to specify conditions on the rows for each 
+group - in other words, which rows should be selected will be based on the
+conditions you specify. 
+The "HAVING" clause should follow the "GROUP BY" clause if you are going
+to use it.
+
+HAVING clause syntax:
+	SELECT column1,
+	SUM(column2)
+	FROM "list-of-tables"
+	GROUP BY "column-list"
+	HAVING "condition";
+
+Example:
+	SELECT dept, avg(salary)
+	FROM employee
+	GROUP BY dept
+	HAVING avg(salary) > 2000;
+ 	
+ 	SELECT state, count(state)
+	FROM customers
+	GROUP BY state
+	HAVING count(state) > 1;
+
+
+
+
+ORDER BY clause:
+ORDER BY is an optional clause which will allow you to display the results 
+of your query in a sorted order (either ascending order or descending 
+order) based on the columns that you specify to order by.
+Ascending()
+
+ORDER BY clause syntax:
+	SELECT column1, SUM(column2) 
+	FROM "list-of-tables" 
+	ORDER BY "column-list" [ASC | DESC];
+
+	[ ] = optional
+
+Example:
+	SELECT employee_id, dept, name, age, salary
+	FROM employee_info
+	WHERE dept = 'Sales'
+	ORDER BY salary, age DESC;
+
+	select lastname, firstname, city
+	from customers
+	order by lastname ASC;
+
+
+COMBINING CONDITIONS & BOOLEAN OPERATORS:
+The AND operator can be used to join two or more conditions in the WHERE 
+clause. Both sides of the AND condition must be true in order for the 
+condition to be met and for those rows to be displayed.
+
+	SELECT column1, SUM(column2)
+	FROM "list-of-tables"
+	WHERE "condition1" AND "condition2";
+
+The OR operator can be used to join two or more conditions in the WHERE 
+clause also.
+	
+	SELECT employeeid, firstname, lastname, title, salary
+	FROM employee_info
+	WHERE salary >= 45000.00 AND title = 'Programmer';
+	// WHERE (salary >= 45000.00) AND (title = 'Programmer');
+
+
+
+IN & BETWEEN:
+The IN conditional operator is really a set membership test operator. 
+That is, it is used to test whether or not a value (stated before the 
+keyword IN) is "in" the list of values provided after the keyword IN.
+
+	SELECT col1, SUM(col2)
+	FROM "list-of-tables"
+	WHERE col3 IN (list-of-values);
+
+	SELECT col1, SUM(col2)
+	FROM "list-of_tables"
+	WHERE col3 BETWEEN value1 AND value2;
+
+Example:
+	SELECT employeeid, lastname, salary
+	FROM employee_info
+	WHERE lastname IN ('Hernandez', 'Jones', 'Roberts', 'Ruiz');
+	
+	===
+	
+	SELECT employeeid, lastname, salary
+	FROM employee_info
+	WHERE lastname = 'Hernandez' OR lastname = 'Jones' 
+		OR lastname = 'Roberts' OR lastname = 'Ruiz';
+
+----You can also use NOT IN to exclude the rows in your list.----
+
+The BETWEEN conditional operator is used to test to see whether or not a 
+value (stated before the keyword BETWEEN) is "between" the two values stated after the keyword BETWEEN.
+
+Example:
+	SELECT employeeid, age, lastname, salary
+	FROM employee_info
+ 	WHERE age BETWEEN 30 AND 40;
+
+ 	===
+
+ 	SELECT employeeid, age, lastname, salary
+	FROM employee_info
+ 	WHERE age >= 30 AND age <= 40;
+
+----You can also use NOT BETWEEN to exclude the values between your range.
+
+
+
+
+MATHEMATICAL FUNCTIONS:
+
+	+	: addition
+	- 	: subtraction
+	*	: multiplication
+	/	: division
+	%	: modulo
+
+	ABS(x)		: returns the absolute value of x
+	SIGN(x)		: returns the sign of input x as -1, 0, or 1 respectively
+	MOD(x, y)	: modulo (same as x%y)
+	FLOOR(x)	: returns the largest integer that less than or equal to x
+	CEILING(x)	: returns the smallest integer that greater than or equal x
+	or CEIL(x)
+	POWER(x, y) : returns the value of x raised to the power of y
+	ROUND(x)	: returns x rounded to the nearest whole integer
+	ROUND(x,d)	: returns the value of x rounded to the number of decimal 
+				  places specified by the value d
+	SQRT(x)		: returns the square-root value of x
+
+Example: 
+	SELECT round(salary), firstname
+ 	FROM employee_info
+
+ 	1. Select the item and per unit price for each item in the items_ordered
+ 	table.
+ 	SELECT item, sum(price)/sum(quantity)
+ 	FROM items_ordered
+ 	GROUP BY item;
+
+
+
+TABLE JOINS, A MUST:
+
+Joins allow you to link data from two or more tables together into a single 
+query result--from one single SELECT statement.
+A "Join" can be recognized in a SQL SELECT statement if it has more than 
+one table after the FROM keyword.
+	
+	SELECT "list-of-columns"
+	FROM table1,table2
+	WHERE "search-condition(s)"
+
+Example:
+	SELECT customer_info.firstname, customer_info.lastname, purchases.item
+	FROM customer_info, purchases
+	WHERE customer_info.customer_number = purchases.customer_number;
+
+	===
+
+	SELECT customer_info.firstname, customer_info.lastname, purchases.item
+	FROM customer_info INNER JOIN purchases
+	ON customer_info.customer_number = purchases.customer_number;
+
+
+	SELECT employee_info.employeeid, employee_info.lastname, 
+			employee_sales.comission
+	FROM employee_info, employee_sales
+	WHERE employee_info.employeeid = employee_sales.employeeid;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
