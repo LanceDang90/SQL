@@ -1,3 +1,6 @@
+Online SQL Interpreter: sqlfiddle.com
+
+
 ------------BASIC SQL-----------
 
 SELECT
@@ -60,7 +63,14 @@ Example:
 	 city varchar(20),
 	 state varchar(20));
 
-
+	CREATE TABLE customer (
+		id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		name VARCHAR (255),
+		address VARCHAR (255),
+		city VARCHAR (255),
+		state CHAR (2),
+		zip CHAR (10)
+	);
 
 
 INSERT:
@@ -77,6 +87,15 @@ Example:
 	 values ('Luke', 'Duke', 45, '2130 Boars Nest',
 	         'Hazard Co', 'Georgia');
 
+	INSERT INTO customer
+		(name, address, city, state, zip)
+		VALUES (
+			'John Smith',
+			'123 Main Street',
+			'Liberty',
+			'CA',
+			'98765'
+		);
 
 
 
@@ -162,8 +181,18 @@ SELECT STATEMENT:
 
 Example:
 	SELECT name, age, salary
-	FROM employee
-	WHERE age > 40;
+		FROM employee
+		WHERE age > 40;
+
+	SELECT ALL GovernmentForm, HeadOfState
+		FROM Country 
+		WHERE headOfState Like 'Elis%'
+
+	SELECT DISTINCT GovernmentForm, HeadOfState
+		FROM Country 
+		WHERE headOfState Like 'Elis%'
+
+
 
 
 Comparion Operators:
@@ -389,36 +418,179 @@ one table after the FROM keyword.
 
 Example:
 	SELECT customer_info.firstname, customer_info.lastname, purchases.item
-	FROM customer_info, purchases
-	WHERE customer_info.customer_number = purchases.customer_number;
+		FROM customer_info, purchases
+		WHERE customer_info.customer_number = purchases.customer_number;
 
 	===
 
 	SELECT customer_info.firstname, customer_info.lastname, purchases.item
-	FROM customer_info INNER JOIN purchases
-	ON customer_info.customer_number = purchases.customer_number;
+		FROM customer_info 
+		INNER JOIN purchases
+			ON customer_info.customer_number = purchases.customer_number;
 
 
 	SELECT employee_info.employeeid, employee_info.lastname, 
 			employee_sales.comission
-	FROM employee_info, employee_sales
-	WHERE employee_info.employeeid = employee_sales.employeeid;
+		FROM employee_info, employee_sales
+		WHERE employee_info.employeeid = employee_sales.employeeid;
 
 
 
 
 
 
+Lynda.com Tutorial (SQL)
+
+// print the table with Name = Country, LifeExpectancy = 'Life Expectancy'
+// AS: 	alias operator
+SELECT Name AS Country, LifeExpectancy AS 'Life Expectancy' 
+FROM Country
+
+
+READING TABLE WITH 'JOIN':
+Example:
+	SELECT c.Name AS Country, c.Continent, ct.Name AS Capital
+		FROM Country AS c
+		JOIN City AS ct
+			ON ct.ID = c.Capital
+		ORDER BY Country;
+
+	===
+
+	SELECT c.Name AS Country, c.Continent, ct.Name AS Capital
+		FROM Country AS c, City AS ct
+		Where ct.ID = c.Capital
+		ORDER BY Country;
+
+
+SORTING BY ORDER BY:
+Example:
+	SELECT Region, AVG(LifeExpectancy) As AvgLE
+		FROM Country
+		WHERE LifeExpectancy
+		GROUP BY Region
+		ORDER BY AvgLE;
+
+
+ACCESSING RELATED TABLES WITH JOIN:
+Example:
+	SELECT SUM(s.quantity) AS Quantity, i.name AS Item
+		FROM sale AS s
+		JOIN item AS i ON s.item_id = i.id
+		GROUP BY i.id;
+
+	SELECT SUM(s.quantity) AS Quantity, i.name AS Item
+		FROM sale AS s
+		RIGHT JOIN item AS i ON s.item_id = i.id 		// out join
+		GROUP BY i.id;
+
+	SELECT s.data, c.name AS Customer, i.name AS item, s.quantity, s.price
+		FROM sale AS s
+		JOIN item AS i ON s.item_id = i.id
+		JOIN customer AS c ON s.customer_id = c.id
+		ORDER BY s.date;
+
+
+ABOUT INDEXES:
+Indexes are fast to access, easily to read, and enable programer to list,
+calculate, and select from tables.
+Example:
+	CREATE TABLE customer (
+		id 	INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		name VARCHAR(255),
+		address VARCHAR(255),
+		city VARCHAR(255),
+		state CHAR(2),
+		zip CHAR(10),
+		INDEX(name),
+		INDEX(zip)
+	);
+
+
+ABOUT THE STRING FUNCTIONS:
+Example:
+	SELECT 'St. Alfonzo''s Pancake Breakfast' AS String
+
+	SELECT CONCAT('Hello, ', 'World') AS String 	// MySQL
+
+	SELECT 'Hello, ' + 'World' AS String 		// Microsoft SQL
+
+
+FINDING THE LENGTH OF STRINGS:
+Example:
+	SELECT LENGTH('Rock and Roll Medley') AS Length
+
+	SELECT title, LENGTH(title) AS 'title length' 
+		FROM album
+
+
+FINDING PART OF A STRING:
+Example:
+	SELECT SUBSTR('Hello, World', 1, 5) AS String;
+
+	SELECT RIGHT('Hello, World', 5) AS String;
+
+	SELECT LEFT('Hello, World', 5) AS String;
+
+
+REMOVING SPACES WITH 'TRIM':
+Example: 
+	SELECT TRIM('    four spaces to the left and right    ') AS String;
+
+
+MAKING STRINGS 'UPPERCASE' AND 'LOWERCASE':
+Example:
+	SELECT UPPER(title) AS Title 
+		FROM album;
+
+	SELECT LOWER(title) AS Title
+		FROM album;
 
 
 
 
+WHEN TO USE NUMERIC FUNCTION:
+Example:
+	SELECT ABS(-12);
+	SELECT ABS('-12');
+	SELECT ABS('-x12');	// undefined
+	
+
+ROUNDING NUMBER:
+Example:
+	SELECT Region, AVG(LifeExpectancy) AS AvgLE,
+			ROUND( AVG(LifeEXpectancy), 0) AS RndLE
+		FROM Country
+		WHERE LifeExpectancy
+		GROUP BY Region
+		ORDER BY AvgLE;
+
+
+INTEGER DIVISION AND REMAINDERS:
+Example:
+	SELECT a.title AS Album, t.title AS Track,
+			SEC_TO_TIME(t.duration) AS Duration   // format time
+		FROM album AS a
+		JOIN track AS t ON t.album_id = a.id;
+
+	SELECT a.title AS Album, t.title AS Track,
+			CONCAT(
+				t.duration DIV 60,
+				':',
+				LPAD( t.duration MOD 60, 2, '0' )	// pads to the left
+			) AS Duration
+		FROM album AS a
+		JOIN track AS t ON t.album_id = a.id;
 
 
 
-
-
-
+DATES AND TIMES:
+Example:
+	SELECT CURTIME();
+	SELECT CURDAY();
+	SELECT NOW();
+	SELECT NOW(), DATE_ADD( NOW(), INTERVAL 2 WEEK ) AS Later;
+	SELECT NOW(), DATE_SUB( NOW(), INTERVAL 2 WEEK ) AS Erlier;
 
 
 
