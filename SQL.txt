@@ -1,6 +1,19 @@
 Online SQL Interpreter: sqlfiddle.com
 
 
+
+SELECT [DISTINCT] <column expression list>
+	FROM <single table>
+	[WHERE <predicate>]
+	[GROUP BY <column list>]
+		[HAVING <predicate>]
+	[ORDER BY <column list>]
+	[LIMIT <integer>];
+
+
+
+
+
 ------------BASIC SQL-----------
 
 SELECT
@@ -591,6 +604,266 @@ Example:
 	SELECT NOW();
 	SELECT NOW(), DATE_ADD( NOW(), INTERVAL 2 WEEK ) AS Later;
 	SELECT NOW(), DATE_SUB( NOW(), INTERVAL 2 WEEK ) AS Erlier;
+
+
+
+
+PRIMARY KEY:
+. Provides a unique "lookup key" for the relation
+. Cannot have any duplicate values
+. Can be made up of > 1 column
+	E.g: (firstname, lastname)
+
+Example:
+	CREATE TABLE Sailors (
+		sid INTEGER,
+		sname CHAR(20),
+		rating INTEGER,
+		age FLOAT,
+		PRIMARY KEY (sid));
+
+	CREATE TABLE Boats (
+		bid INTEGER,
+		bname CHAR(20),
+		color CHAR(10),
+		PRIMARY KEY (bid));
+
+	CREATE TABLE Reserves (
+		sid INTEGER,
+		bid INTEGER,
+		day DATE,
+		PRIMARY KEY (sid, bid, day),
+		FOREIGN KEY (sid) REFERENCES Sailors,
+		FOREIGN KEY (bid) REFERENCES Boats);
+
+
+
+Arithmetic Expressions:
+Example: 
+	SELECT S1.sname AS name1, S2.sname AS name2
+		FROM Sailors AS S1, Sailors AS S2
+		WHERE 2*S1.rating = S2.rating - 1;
+
+	SELECT log(1000) as three,
+		exp(ln(2)) as two,
+		cos(0) as one,
+		ln(2*3) = ln(2) + ln(3) as sanity;
+
+
+
+String Comparisons:
+Example:
+	SELECT S.sname
+		FROM Sailors S
+		WHERE S.sname LIKE 'B_%';
+
+	====
+
+	SELECT S.sname
+		FROM Sailors S
+		WHERE S.sname ~ 'B.*';
+
+
+Combining Predicates:
+Subtle connections between:
+. Boolean logic in WHERE (i.e., AND, OR)
+. Traditional Set operations (i.e. INTERSECT, UNION)
+
+Example:
+	SELECT R.sid
+		FROM Boats B, Reserves R
+		WHERE R.bid=B.bid AND B.color='red'
+	UNION ALL
+	SELECT R.sid
+		FROM Boats B, Reserves R
+		WHERE R.bid=B.bid AND B.color='green'
+
+
+	SELECT S.sid
+		FROM Sailors S
+	EXCEPT
+	SELECT S.sid
+		FROM Sailors S, Reserves R
+		WHERE S.sid=R.sid
+
+
+
+
+Nested Queries: IN, NOT IN
+Example:
+	SELECT S.sname
+		FROM Sailors S
+		WHERE S.sid IN  
+			(SELECT R.sid
+			FROM Reserves R
+			WHERE R.bid=102);
+
+
+Nested Queries with Correlation:
+Example: 
+	SELECT S.sname
+		FROM Sailors S
+		WHERE EXISTS
+			(SELECT *
+			FROM Reserves R
+			WHERE R.bid=102 AND S.sid=R.sid)
+
+
+
+More on Set-Comparison Operators:
+. we’ve seen: IN, EXISTS
+. can also have: NOT IN, NOT EXISTS
+. other forms: op ANY, op ALL
+
+Example:
+	SELECT *
+		FROM Sailors S
+		WHERE S.rating > ANY
+			(SELECT S2.rating
+			FROM Sailors S2
+			WHERE S2.sname='Popeye')
+
+
+
+Join Variants:
+. INNER is default
+. “NATURAL” means equi-join for each pair of attributes with the same name
+. Try SELECT * with NATURAL JOIN: removes duplicate attributes in output!
+
+SELECT (column_list)
+	FROM table_name
+		[INNER | {LEFT |RIGHT | FULL } {OUTER}] JOIN table_name
+		ON qualification_list
+	WHERE …
+
+Examples:
+	SELECT s.sid, s.sname, r.bid
+		FROM Sailors s, Reserves r
+		WHERE s.sid = r.sid AND s.age > 20;
+
+	====
+
+	SELECT s.sid, s.sname, r.bid
+		FROM Sailors s INNER JOIN Reserves r
+		ON s.sid = r.sid
+		WHERE s.age > 20;
+
+	====
+
+	SELECT s.sid, s.sname, r.bid
+		FROM Sailors s NATURAL JOIN Reserves r
+		WHERE s.age > 20;
+
+
+
+Left Outer Join:
+Returns all matched rows, and preserves all unmatched rows from the table
+on the left of the join clause (use nulls in fields of non-matching tuples)
+
+Example:
+	SELECT s.sid, s.sname, r.bid
+		FROM Sailors2 s LEFT OUTER JOIN Reserves2 r
+		ON s.sid = r.sid;
+
+//Returns all sailors & bid for boat in any of their reservations
+Note: no match for s.sid? r.bid IS NULL!
+	SELECT s.sid, s.sname, r.bid
+		FROM Sailors2 s LEFT OUTER JOIN Reserves2 reservations
+		ON s.sid = r.sid;
+
+
+
+Right Outer Join
+
+
+
+
+Right Outer Join:
+Returns all matched rows, and preserves all unmatched rows from the table 
+on the right of the join clause
+
+Example:
+	SELECT r.sid, b.bid, b.bname
+		FROM Reserves2 r RIGHT OUTER JOIN Boats2 b
+		ON r.bid = b.bid;
+
+//Returns all boats & information on which ones are reserved.
+No match for b.bid? r.sid IS NULL!
+	SELECT r.sid, b.bid, b.bname
+		FROM Reserves2 r RIGHT OUTER JOIN Boats2 b
+		ON r.bid = b.bid;
+
+
+Subqueries in FROM:
+Examples:
+	SELECT bname, scount
+		FROM Boats2 B,
+			(SELECT B.bid, COUNT (*)
+			FROM Boats2 B, Reserves2 R
+			WHERE R.bid = B.bid AND B.color = 'red'
+			GROUP BY B.bid) AS Reds(bid, scount)
+		WHERE Reds.bid=B.bid AND scount < 10;
+
+
+WITH:
+	WITH Reds(bid, scount) AS 
+		(SELECT B.bid, COUNT (*)
+		FROM Boats2 B, Reserves2 R
+		WHERE R.bid = B.bid AND B.color = 'red'
+		GROUP BY B.bid)
+	SELECT bname, scount
+	FROM Boats2 B, Reds
+	WHERE Reds.bid=B.bid
+	AND scount < 10;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
